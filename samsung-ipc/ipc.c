@@ -357,6 +357,50 @@ int ipc_client_power_off(struct ipc_client *client)
     return client->handlers->power_off(client->handlers->power_off_data);
 }
 
+int ipc_client_gprs_handlers_available(struct ipc_client *client)
+{
+    if (client == NULL ||
+        client->handlers == NULL)
+        return -1;
+
+    if(client->handlers->gprs_activate != NULL && 
+        client->handlers->gprs_deactivate != NULL &&
+        client->handlers->gprs_get_iface != NULL)
+        return 1;
+    else
+        return 0;
+}
+
+int ipc_client_gprs_activate(struct ipc_client *client)
+{
+    if (client == NULL ||
+        client->handlers == NULL ||
+        client->handlers->gprs_activate == NULL)
+        return -1;
+
+    return client->handlers->gprs_activate(client->handlers->gprs_activate_data);
+}
+
+int ipc_client_gprs_deactivate(struct ipc_client *client)
+{
+    if (client == NULL ||
+        client->handlers == NULL ||
+        client->handlers->gprs_deactivate == NULL)
+        return -1;
+
+    return client->handlers->gprs_deactivate(client->handlers->gprs_deactivate_data);
+}
+
+int ipc_client_gprs_get_iface(struct ipc_client *client, char **iface)
+{
+    if (client == NULL ||
+        client->handlers == NULL ||
+        client->handlers->gprs_get_iface == NULL)
+        return -1;
+
+    return client->handlers->gprs_get_iface(iface);
+}
+
 int _ipc_client_send(struct ipc_client *client, struct ipc_message_info *request)
 {
     if (client == NULL ||
