@@ -29,6 +29,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &xmm6260_default_handlers,
         .fmt_ops = &xmm6260_i9100_fmt_ops,
         .rfs_ops = &xmm6260_rfs_ops,
+        .fs_ops = NULL,
     },
     {   
         .name = "galaxys2",
@@ -36,6 +37,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &xmm6260_default_handlers,
         .fmt_ops = &xmm6260_i9100_fmt_ops,
         .rfs_ops = &xmm6260_rfs_ops,
+        .fs_ops = NULL,
     },
     {
         .name = "maguro",
@@ -43,7 +45,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &xmm6260_default_handlers,
         .fmt_ops = &xmm6260_i9250_fmt_ops,
         .rfs_ops = &xmm6260_rfs_ops,
-        .fs_ops = &xmm6260_i9250_fs_ops,
+        //.fs_ops = &xmm6260_i9250_fs_ops,
     },
     {
         .name = "crespo",
@@ -51,6 +53,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &crespo_default_handlers,
         .fmt_ops = &crespo_fmt_ops,
         .rfs_ops = &crespo_rfs_ops,
+        .fs_ops = NULL,
     },
     {
         .name = "aries",
@@ -58,6 +61,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &aries_default_handlers,
         .fmt_ops = &aries_fmt_ops,
         .rfs_ops = &aries_rfs_ops,
+        .fs_ops = NULL,
     },
     {
         .name = "aries",
@@ -65,6 +69,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &aries_default_handlers,
         .fmt_ops = &aries_fmt_ops,
         .rfs_ops = &aries_rfs_ops,
+        .fs_ops = NULL,
     }
 };
 
