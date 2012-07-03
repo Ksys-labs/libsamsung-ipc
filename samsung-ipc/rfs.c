@@ -33,6 +33,46 @@
 
 #include "ipc_private.h"
 
+char *nv_data_path(struct ipc_client *client) {
+    if (client->fs_ops && client->fs_ops->nv_data_path) {
+        return client->fs_ops->nv_data_path;
+    }
+
+    return "/efs/nv_data.bin";
+}
+
+char *nv_data_md5_path(struct ipc_client *client) {
+    if (client->fs_ops && client->fs_ops->nv_data_md5_path) {
+        return client->fs_ops->nv_data_md5_path;
+    }
+
+    return "/efs/nv_data.bin.md5";
+}
+
+char *nv_state_path(struct ipc_client *client) {
+    if (client->fs_ops && client->fs_ops->nv_state_path) {
+        return client->fs_ops->nv_state_path;
+    }
+
+    return "/ets/.nv_state";
+}
+
+char *nv_data_bak_path(struct ipc_client *client) {
+    if (client->fs_ops && client->fs_ops->nv_data_bak_path) {
+        return client->fs_ops->nv_data_bak_path;
+    }
+
+    return "/efs/.nv_data.bak";
+}
+
+char *nv_data_md5_bak_path(struct ipc_client *client) {
+    if (client->fs_ops && client->fs_ops->nv_data_md5_bak_path) {
+        return client->fs_ops->nv_data_md5_bak_path;
+    }
+
+    return "/efs/.nv_data.bak.md5";
+}
+
 void md5hash2string(char *out, uint8_t *in)
 {
     int i;
@@ -78,7 +118,8 @@ void nv_data_md5_generate(struct ipc_client *client)
     ipc_client_log(client, "nv_data_md5_generate: enter\n");
 
     ipc_client_log(client, "nv_data_md5_generate: generating MD5 hash\n");
-    nv_data_p=ipc_file_read(client, "/efs/nv_data.bin", NV_DATA_SIZE, NV_DATA_SIZE / 10);
+    nv_data_p=ipc_file_read(client, nv_data_path(client),
+        NV_DATA_SIZE, NV_DATA_SIZE / 10);
     nv_data_md5_compute(nv_data_p, NV_DATA_SIZE, nv_data_md5_hash);
     free(nv_data_p);
 
@@ -92,7 +133,7 @@ void nv_data_md5_generate(struct ipc_client *client)
 
     ipc_client_log(client, "nv_data_md5_generate: writing MD5 hash\n");
     /* Write the MD5 hash in nv_data.bin.md5. */
-    fd = open("/efs/nv_data.bin.md5", O_RDWR | O_CREAT | O_TRUNC, 0644);
+    fd = open(nv_data_md5_path(client), O_RDWR | O_CREAT | O_TRUNC, 0644);
 
     if (fd < 0)
     {
@@ -127,7 +168,7 @@ void nv_data_backup_create(struct ipc_client *client)
 
     ipc_client_log(client, "nv_data_backup_create: enter\n");
 
-    if (stat("/efs/nv_data.bin", &nv_stat) < 0)
+    if (stat(nv_data_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_backup_create: nv_data.bin missing\n");
         nv_data_generate(client);
@@ -140,7 +181,7 @@ void nv_data_backup_create(struct ipc_client *client)
         return;
     }
 
-    if (stat("/efs/nv_data.bin.md5", &nv_stat) < 0)
+    if (stat(nv_data_md5_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_backup_create: nv_data.bin.md5 missing\n");
         nv_data_generate(client);
@@ -155,14 +196,15 @@ void nv_data_backup_create(struct ipc_client *client)
     memset(nv_data_md5_hash_string, 0, MD5_STRING_SIZE);
 
     /* Read the content of the backup file. */
-    nv_data_p=ipc_file_read(client, "/efs/nv_data.bin", NV_DATA_SIZE, NV_DATA_SIZE / 10);
+    nv_data_p=ipc_file_read(client, nv_data_path(client),
+        NV_DATA_SIZE, NV_DATA_SIZE / 10);
 
     /* Compute the backup file MD5 hash. */
     nv_data_md5_compute(nv_data_p, NV_DATA_SIZE, nv_data_md5_hash);
     md5hash2string(nv_data_md5_hash_string, nv_data_md5_hash);
 
     /* Read the stored backup file MD5 hash. */
-    fd=open("/efs/nv_data.bin.md5", O_RDONLY);
+    fd=open(nv_data_md5_path(client), O_RDONLY);
     read(fd, nv_data_md5_hash_read, MD5_STRING_SIZE);
     close(fd);
 
@@ -177,7 +219,7 @@ void nv_data_backup_create(struct ipc_client *client)
         ipc_client_log(client, "nv_data_backup_create: MD5 hash mismatch on backup file\n");
         ipc_client_log(client, "nv_data_backup_create: Consider the computed one as correct\n");
 
-        fd=open("/efs/nv_data.bin.md5", O_WRONLY);
+        fd=open(nv_data_md5_path(client), O_WRONLY);
         read(fd, nv_data_md5_hash_string, MD5_STRING_SIZE);
         close(fd);
 
@@ -197,7 +239,7 @@ nv_data_backup_create_write:
     {
         ipc_client_log(client, "nv_data_backup_create: .nv_data.bak write try #%d\n", nv_data_write_tries + 1);
 
-        fd=open("/efs/.nv_data.bak", O_RDWR | O_CREAT | O_TRUNC, 0644);
+        fd=open(nv_data_bak_path(client), O_RDWR | O_CREAT | O_TRUNC, 0644);
         if (fd < 0)
         {
             ipc_client_log(client, "nv_data_backup_create: negative fd while opening /efs/.nv_data.bak, error: %s\n", strerror(errno));
@@ -221,12 +263,12 @@ nv_data_backup_create_write:
     if (nv_data_write_tries == 5)
     {
         ipc_client_log(client, "nv_data_backup_create: writing nv_data.bin to .nv_data.bak failed too many times\n");
-        unlink("/efs/.nv_data.bak");
+        unlink(nv_data_bak_path(client));
         goto exit;
     }
 
     /* Read the newly-written .nv_data.bak. */
-    nv_data_bak_p=ipc_file_read(client, "/efs/.nv_data.bak", NV_DATA_SIZE, NV_DATA_SIZE / 10);
+    nv_data_bak_p=ipc_file_read(client, nv_data_bak_path(client), NV_DATA_SIZE, NV_DATA_SIZE / 10);
 
     /* Compute the MD5 hash for nv_data.bin. */
     nv_data_md5_compute(nv_data_bak_p, NV_DATA_SIZE, nv_data_md5_hash);
@@ -247,12 +289,12 @@ nv_data_backup_create_write:
     }
 
     /* Write the MD5 hash in .nv_data.bak.md5. */
-    fd=open("/efs/.nv_data.bak.md5", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd=open(nv_data_md5_bak_path(client), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     write(fd, nv_data_md5_hash_read, MD5_STRING_SIZE);
     close(fd);
 
     /* Write the correct .nv_state. */
-    fd=open("/efs/.nv_state", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd=open(nv_state_path(client), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     data='1';
     write(fd, &data, sizeof(data));
     close(fd);
@@ -283,7 +325,7 @@ void nv_data_backup_restore(struct ipc_client *client)
 
     ipc_client_log(client, "nv_data_backup_restore: enter\n");
 
-    if (stat("/efs/.nv_data.bak", &nv_stat) < 0)
+    if (stat(nv_data_bak_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_backup_restore: .nv_data.bak missing\n");
         nv_data_generate(client);
@@ -299,7 +341,7 @@ void nv_data_backup_restore(struct ipc_client *client)
         return;
     }
 
-    if (stat("/efs/.nv_data.bak.md5", &nv_stat) < 0)
+    if (stat(nv_data_md5_bak_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_backup_restore: .nv_data.bak.md5 missing\n");
         nv_data_generate(client);
@@ -315,14 +357,14 @@ void nv_data_backup_restore(struct ipc_client *client)
     memset(nv_data_md5_hash_string, 0, MD5_STRING_SIZE);
 
     /* Read the content of the backup file. */
-    nv_data_bak_p=ipc_file_read(client, "/efs/.nv_data.bak", NV_DATA_SIZE, NV_DATA_SIZE / 10);
+    nv_data_bak_p=ipc_file_read(client, nv_data_bak_path(client), NV_DATA_SIZE, NV_DATA_SIZE / 10);
 
     /* Compute the backup file MD5 hash. */
     nv_data_md5_compute(nv_data_bak_p, NV_DATA_SIZE, nv_data_md5_hash);
     md5hash2string(nv_data_md5_hash_string, nv_data_md5_hash);
 
     /* Read the stored backup file MD5 hash. */
-    fd=open("/efs/.nv_data.bak.md5", O_RDONLY);
+    fd=open(nv_data_md5_bak_path(client), O_RDONLY);
     read(fd, nv_data_md5_hash_read, MD5_STRING_SIZE);
     close(fd);
 
@@ -337,7 +379,7 @@ void nv_data_backup_restore(struct ipc_client *client)
         ipc_client_log(client, "nv_data_backup_restore: MD5 hash mismatch on backup file\n");
         ipc_client_log(client, "nv_data_backup_restore: Consider the computed one as correct\n");
 
-        fd=open("/efs/.nv_data.bak.md5", O_WRONLY);
+        fd=open(nv_data_md5_bak_path(client), O_WRONLY);
         read(fd, nv_data_md5_hash_string, MD5_STRING_SIZE);
         close(fd);
 
@@ -357,7 +399,7 @@ nv_data_backup_restore_write:
     {
         ipc_client_log(client, "nv_data_backup_restore: nv_data.bin write try #%d\n", nv_data_write_tries + 1);
 
-        fd=open("/efs/nv_data.bin", O_RDWR | O_CREAT | O_TRUNC, 0644);
+        fd=open(nv_data_path(client), O_RDWR | O_CREAT | O_TRUNC, 0644);
         if (fd < 0)
         {
             ipc_client_log(client, "nv_data_backup_restore: negative fd while opening /efs/nv_data.bin, error: %s\n", strerror(errno));
@@ -381,13 +423,13 @@ nv_data_backup_restore_write:
     if (nv_data_write_tries == 5)
     {
         ipc_client_log(client, "nv_data_backup_restore: writing the backup to nv_data.bin failed too many times\n");
-        unlink("/efs/nv_data.bin");
+        unlink(nv_data_path(client));
         goto exit;
         
     }
 
     /* Read the newly-written nv_data.bin. */
-    nv_data_p=ipc_file_read(client, "/efs/nv_data.bin", NV_DATA_SIZE, NV_DATA_SIZE / 10);
+    nv_data_p=ipc_file_read(client, nv_data_path(client), NV_DATA_SIZE, NV_DATA_SIZE / 10);
 
     /* Compute the MD5 hash for nv_data.bin. */
     nv_data_md5_compute(nv_data_p, NV_DATA_SIZE, nv_data_md5_hash);
@@ -408,12 +450,12 @@ nv_data_backup_restore_write:
     }
 
     /* Write the MD5 hash in nv_data.bin.md5. */
-    fd=open("/efs/nv_data.bin.md5", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd=open(nv_data_md5_path(client), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     write(fd, nv_data_md5_hash_read, MD5_STRING_SIZE);
     close(fd);
 
     /* Write the correct .nv_state. */
-    fd=open("/efs/.nv_state", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd=open(nv_state_path(client), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     data='1';
     write(fd, &data, sizeof(data));
     close(fd);
@@ -434,11 +476,11 @@ void nv_data_check(struct ipc_client *client)
 
     ipc_client_log(client, "nv_data_check: enter\n");
 
-    if (stat("/efs/nv_data.bin", &nv_stat) < 0)
+    if (stat(nv_data_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_check: nv_data.bin missing\n");
         nv_data_backup_restore(client);
-        stat("/efs/nv_data.bin", &nv_stat);
+        stat(nv_data_path(client), &nv_stat);
     }
 
     if (nv_stat.st_size != NV_DATA_SIZE)
@@ -447,19 +489,19 @@ void nv_data_check(struct ipc_client *client)
         nv_data_backup_restore(client);
     }
 
-    if (stat("/efs/nv_data.bin.md5", &nv_stat) < 0)
+    if (stat(nv_data_md5_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_check: nv_data.bin.md5 missing\n");
         nv_data_backup_restore(client);
     }
 
-    if (stat("/efs/.nv_data.bak", &nv_stat) < 0 || stat("/efs/.nv_data.bak.md5", &nv_stat) < 0)
+    if (stat(nv_data_bak_path(client), &nv_stat) < 0 || stat(nv_data_md5_bak_path(client), &nv_stat) < 0)
     {
         ipc_client_log(client, "nv_data_check: .nv_data.bak or .nv_data.bak.md5 missing\n");
         nv_data_backup_create(client);
     }    
 
-    nv_state_fd=open("/efs/.nv_state", O_RDONLY);
+    nv_state_fd=open(nv_state_path(client), O_RDONLY);
 
     if (nv_state_fd < 0 || fstat(nv_state_fd, &nv_stat) < 0)
     {
@@ -500,7 +542,7 @@ void nv_data_md5_check(struct ipc_client *client)
     memset(nv_data_md5_hash_read, 0, MD5_STRING_SIZE);
     memset(nv_data_md5_hash_string, 0, MD5_STRING_SIZE);
 
-    nv_data_p=ipc_file_read(client, "/efs/nv_data.bin", NV_DATA_SIZE, 1024);
+    nv_data_p=ipc_file_read(client, nv_data_path(client), NV_DATA_SIZE, 1024);
     data_p=nv_data_p;
 
     nv_data_md5_compute(data_p, NV_DATA_SIZE, nv_data_md5_hash);
@@ -509,7 +551,7 @@ void nv_data_md5_check(struct ipc_client *client)
 
     free(nv_data_p);
 
-    fd=open("/efs/nv_data.bin.md5", O_RDONLY);
+    fd=open(nv_data_md5_path(client), O_RDONLY);
 
     /* Read the md5 stored in the file. */
     read(fd, nv_data_md5_hash_read, MD5_STRING_SIZE);
@@ -551,7 +593,7 @@ int nv_data_read(struct ipc_client *client, int offset, int length, char *buf)
 
     nv_data_check(client);
 
-    fd = open("/efs/nv_data.bin", O_RDONLY);
+    fd = open(nv_data_path(client), O_RDONLY);
 
     if (fd < 0) {
         ipc_client_log(client, "nv_data_read: nv_data file fd is negative\n");
@@ -591,7 +633,7 @@ int nv_data_write(struct ipc_client *client, int offset, int length, char *buf)
 
     nv_data_check(client);
 
-    fd = open("/efs/nv_data.bin", O_WRONLY);
+    fd = open(nv_data_path(client), O_WRONLY);
 
     if (fd < 0) {
         ipc_client_log(client, "nv_data_write: nv_data file fd is negative\n");
@@ -628,7 +670,7 @@ void ipc_rfs_send_io_confirm_for_nv_read_item(struct ipc_client *client, struct 
     if (rfs_io == NULL)
     {
         ipc_client_log(client, "ERROR: Request message is invalid: aseq = %i", info->aseq);
-        return NULL;
+        return;
     }
 
     rfs_io_conf = malloc(rfs_io->length + sizeof(struct ipc_rfs_io_confirm));
