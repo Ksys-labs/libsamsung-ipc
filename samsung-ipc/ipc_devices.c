@@ -33,7 +33,7 @@ struct ipc_device_desc ipc_devices[] = {
     },
     {   
         .name = "galaxys2",
-        .board_name = "smdk2410",
+        .board_name = "smdk4210",
         .handlers = &xmm6260_default_handlers,
         .fmt_ops = &xmm6260_i9100_fmt_ops,
         .rfs_ops = &xmm6260_rfs_ops,
@@ -45,7 +45,7 @@ struct ipc_device_desc ipc_devices[] = {
         .handlers = &xmm6260_default_handlers,
         .fmt_ops = &xmm6260_i9250_fmt_ops,
         .rfs_ops = &xmm6260_rfs_ops,
-        //.fs_ops = &xmm6260_i9250_fs_ops,
+        .fs_ops = &xmm6260_i9250_fs_ops,
     },
     {
         .name = "crespo",

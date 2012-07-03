@@ -34,98 +34,69 @@
 #include "ipc_private.h"
 
 static inline char *nv_data_path(struct ipc_client *client) {
-#if 1
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
     if (!client) {
         ipc_client_log(client, "%s: client is NULL\n", __func__);
         goto fail;
     }
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
 
-    ipc_client_log(client, "%s: YYYYYY\n", __func__);
-    if (client->fs_ops && client->fs_ops->nv_data_path) {
-        ipc_client_log(client, "%s: QQQQQQ\n", __func__);
-        char *path =  client->fs_ops->nv_data_path;
-        ipc_client_log(client, "%s: WWWWW %s\n", __func__, path);
-        return path;
-    }
-    ipc_client_log(client, "%s: ZZZZZ\n", __func__);
+    if (client->fs_ops && client->fs_ops->nv_data_path)
+        return client->fs_ops->nv_data_path;
 
 fail:
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-#endif
     return "/efs/nv_data.bin";
 }
 
 static inline char *nv_data_md5_path(struct ipc_client *client) {
-#if 0
     if (!client) {
-        ipc_client_log(client, "XXXXXX %s: client is NULL\n", __func__);
+        ipc_client_log(client, "%s: client is NULL\n", __func__);
         goto fail;
     }
 
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-    if (client->fs_ops && client->fs_ops->nv_data_md5_path) {
+    if (client->fs_ops && client->fs_ops->nv_data_md5_path)
         return client->fs_ops->nv_data_md5_path;
-    }
 
 fail:
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-#endif
     return "/efs/nv_data.bin.md5";
 }
 
 static inline char *nv_state_path(struct ipc_client *client) {
-#if 0
     if (!client) {
-        ipc_client_log(client, "XXXXXX %s: client is NULL\n", __func__);
+        ipc_client_log(client, "%s: client is NULL\n", __func__);
         goto fail;
     }
 
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-    if (client->fs_ops && client->fs_ops->nv_state_path) {
+    if (client->fs_ops && client->fs_ops->nv_state_path)
         return client->fs_ops->nv_state_path;
-    }
 
 fail:
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-#endif
     return "/efs/.nv_state";
 }
 
 static inline char *nv_data_bak_path(struct ipc_client *client) {
-#if 0
     if (!client) {
-        ipc_client_log(client, "XXXXXX %s: client is NULL\n", __func__);
+        ipc_client_log(client, "%s: client is NULL\n", __func__);
         goto fail;
     }
 
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
     if (client->fs_ops && client->fs_ops->nv_data_bak_path) {
         return client->fs_ops->nv_data_bak_path;
     }
 
 fail:
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-#endif
     return "/efs/.nv_data.bak";
 }
 
 static inline char *nv_data_md5_bak_path(struct ipc_client *client) {
-#if 0
     if (!client) {
-        ipc_client_log(client, "XXXXXX %s: client is NULL\n", __func__);
+        ipc_client_log(client, "%s: client is NULL\n", __func__);
         goto fail;
     }
 
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
     if (client->fs_ops && client->fs_ops->nv_data_md5_bak_path) {
         return client->fs_ops->nv_data_md5_bak_path;
     }
 
 fail:
-    ipc_client_log(client, "%s: %d\n", __func__, __LINE__);
-#endif
     return "/efs/.nv_data.bak.md5";
 }
 
