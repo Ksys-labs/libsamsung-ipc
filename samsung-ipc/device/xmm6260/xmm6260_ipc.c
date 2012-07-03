@@ -51,13 +51,13 @@ struct ipc_client *xmm_log_client = 0;
 int i9100_modem_bootstrap(struct ipc_client *client)
 {
     xmm_log_client = client;
-    return boot_modem_i9100();
+    return boot_modem_i9100(client);
 }
 
 int i9250_modem_bootstrap(struct ipc_client *client)
 {
     xmm_log_client = client;
-    return boot_modem_i9250();
+    return boot_modem_i9250(client);
 }
 
 int xmm6260_ipc_send(struct ipc_client *client, struct ipc_message_info *request)
