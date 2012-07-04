@@ -26,12 +26,16 @@
 #define __LOG_H__
 
 #include "common.h"
+#include "ipc_private.h"
+
+extern struct ipc_client *xmm_log_client;
 
 #ifndef SILENT
 	#define LOG_TAG "xmm6260-sec"
 	#define _p(fmt, x...) \
 		do {\
-			printf("[" LOG_TAG "]: " fmt " at %s:%s:%d\n", \
+			ipc_client_log(xmm_log_client, \
+				"[" LOG_TAG "]: " fmt " at %s:%s:%d\n", \
 				##x, __FILE__, __func__, __LINE__); \
 		} while (0)
 #else

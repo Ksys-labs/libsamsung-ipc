@@ -46,13 +46,17 @@
 
 #define IPC_MAX_XFER 4096
 
+struct ipc_client *xmm_log_client = 0;
+
 int i9100_modem_bootstrap(struct ipc_client *client)
 {
+    xmm_log_client = client;
     return boot_modem_i9100();
 }
 
 int i9250_modem_bootstrap(struct ipc_client *client)
 {
+    xmm_log_client = client;
     return boot_modem_i9250();
 }
 
