@@ -219,6 +219,8 @@ int ipc_client_set_handlers_common_data(struct ipc_client *client, void *data)
     client->handlers->close_data = common_data;
     client->handlers->power_on_data = common_data;
     client->handlers->power_off_data = common_data;
+    client->handlers->gprs_activate_data = common_data;
+    client->handlers->gprs_deactivate_data = common_data;
 
     return 0;
 }
@@ -249,6 +251,8 @@ int ipc_client_create_handlers_common_data(struct ipc_client *client)
     client->handlers->close_data = common_data;
     client->handlers->power_on_data = common_data;
     client->handlers->power_off_data = common_data;
+    client->handlers->gprs_activate_data = common_data;
+    client->handlers->gprs_deactivate_data = common_data;
 
     return 0;
 }
@@ -277,6 +281,8 @@ int ipc_client_destroy_handlers_common_data(struct ipc_client *client)
     client->handlers->close_data = common_data;
     client->handlers->power_on_data = common_data;
     client->handlers->power_off_data = common_data;
+    client->handlers->gprs_activate_data = common_data;
+    client->handlers->gprs_deactivate_data = common_data;
 
     return 0;
 }
